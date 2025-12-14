@@ -67,15 +67,38 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 st.markdown("""
 <style>
-    /* Main background */
-    .main {
-        background-color: #0e1117;
-        color: #ffffff;
+    /* FORCE DARK MODE ON EVERYTHING */
+    :root {
+        color-scheme: dark;
+    }
+    
+    /* Force body and all containers to be dark */
+    body, html {
+        background-color: #0e1117 !important;
+        color: #ffffff !important;
+    }
+    
+    /* Force the entire app container */
+    [data-testid="stAppViewContainer"] {
+        background-color: #0e1117 !important;
+    }
+    
+    /* Force main content area */
+    .main, [data-testid="stMain"] {
+        background-color: #0e1117 !important;
+        color: #ffffff !important;
         padding: 2rem;
     }
     
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
+    /* Force all blocks */
+    [data-testid="block-container"] {
+        background-color: #0e1117 !important;
+    }
+    
+    /* Force vertical blocks */
+    [data-testid="stVerticalBlock"] {
+        background-color: #0e1117 !important;
+    }
     
     /* Header styling */
     .header {
@@ -87,10 +110,6 @@ st.markdown("""
     }
     
     /* Chat input box */
-    .stChatInput {
-        background-color: #1e1e1e !important;
-    }
-    
     .stChatInput input {
         background-color: #2d2d2d !important;
         color: #ffffff !important;
@@ -107,20 +126,17 @@ st.markdown("""
         border-radius: 10px;
         padding: 1rem;
         margin: 0.5rem 0;
-        color: #ffffff !important;
     }
     
-    /* User message */
     [data-testid="stChatMessageContent"] {
         color: #ffffff !important;
     }
     
-    /* Markdown text */
     .stMarkdown {
         color: #ffffff !important;
     }
     
-    /* Sidebar */
+    /* Sidebar - force dark */
     [data-testid="stSidebar"] {
         background-color: #1a1a1a !important;
     }
@@ -142,21 +158,20 @@ st.markdown("""
     
     .stButton>button:hover {
         background-color: #5b21b6;
-        border: none;
     }
     
-    /* Success boxes */
-    .success-box, [data-testid="stSuccess"] {
-        background-color: #1e4620 !important;
-        border: 1px solid #2d5a2f !important;
-        color: #4ade80 !important;
-    }
-    
-    /* Info boxes */
-    .info-box, [data-testid="stInfo"] {
+    /* Info boxes - DARK backgrounds */
+    [data-testid="stInfo"] {
         background-color: #1e3a5f !important;
         border: 1px solid #2d5a8f !important;
         color: #60a5fa !important;
+    }
+    
+    /* Success boxes */
+    [data-testid="stSuccess"] {
+        background-color: #1e4620 !important;
+        border: 1px solid #2d5a2f !important;
+        color: #4ade80 !important;
     }
     
     /* Warning boxes */
@@ -166,28 +181,43 @@ st.markdown("""
         color: #fbbf24 !important;
     }
     
-    /* Checkboxes */
-    .stCheckbox {
-        color: #ffffff !important;
+    /* Error boxes */
+    [data-testid="stError"] {
+        background-color: #5f1e1e !important;
+        border: 1px solid #8f2d2d !important;
+        color: #f87171 !important;
     }
     
-    /* Checkbox labels */
+    /* Columns - force dark */
+    [data-testid="column"] {
+        background-color: #0e1117 !important;
+    }
+    
+    /* Expander */
+    [data-testid="stExpander"] {
+        background-color: #1e1e1e !important;
+        border: 1px solid #444 !important;
+    }
+    
+    /* Text inputs */
+    .stTextInput input {
+        background-color: #2d2d2d !important;
+        color: #ffffff !important;
+        border: 1px solid #444 !important;
+    }
+    
+    /* Checkboxes */
     .stCheckbox label {
         color: #ffffff !important;
     }
     
-    /* Document item styling */
-    .doc-item {
-        background-color: #2d2d2d;
-        padding: 0.75rem;
-        margin: 0.5rem 0;
-        border-radius: 8px;
-        border-left: 3px solid #4c1d95;
+    /* Metrics */
+    [data-testid="stMetricValue"] {
+        color: #ffffff !important;
     }
     
-    .doc-item-selected {
-        background-color: #3d2d5d;
-        border-left: 3px solid #9333ea;
+    [data-testid="stMetricLabel"] {
+        color: #cccccc !important;
     }
     
     /* Divider */
@@ -196,7 +226,18 @@ st.markdown("""
     }
     
     /* All text elements */
-    p, span, div, label {
+    p, span, div, label, h1, h2, h3, h4, h5, h6 {
+        color: #ffffff !important;
+    }
+    
+    /* Links */
+    a {
+        color: #9333ea !important;
+    }
+    
+    /* Code blocks */
+    code {
+        background-color: #2d2d2d !important;
         color: #ffffff !important;
     }
 </style>
