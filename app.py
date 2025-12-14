@@ -4,12 +4,23 @@ from drive_connector import DriveConnector
 from gemini_query import GeminiQueryEngine
 
 # Page configuration
+# Page configuration - FORCE DARK MODE
 st.set_page_config(
     page_title="Gemini Drive Assistant",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Force dark theme
+st.markdown("""
+<script>
+    var stTheme = window.parent.document.querySelector('[data-testid="stAppViewContainer"]');
+    if (stTheme) {
+        stTheme.setAttribute('data-theme', 'dark');
+    }
+</script>
+""", unsafe_allow_html=True)
 
 # hide_streamlit_style = """
 #             <style>
