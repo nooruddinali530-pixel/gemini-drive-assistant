@@ -146,6 +146,36 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+
+st.markdown("""
+<style>
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Hide "Made with Streamlit" */
+    .viewerBadge_container__1QSob {
+        display: none !important;
+    }
+    
+    /* Hide deploy button */
+    .styles_viewerBadge__1yB5_ {
+        display: none !important;
+    }
+    
+    /* Additional hiding for various Streamlit elements */
+    [data-testid="stToolbar"] {
+        display: none !important;
+    }
+    
+    /* Hide the hamburger menu */
+    [data-testid="stDecoration"] {
+        display: none !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # Initialize session state
 if 'messages' not in st.session_state:
     st.session_state.messages = []
