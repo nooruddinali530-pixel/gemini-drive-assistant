@@ -3,7 +3,6 @@ import config
 from drive_connector import DriveConnector
 from gemini_query import GeminiQueryEngine
 
-# Page configuration
 # Page configuration - FORCE DARK MODE
 st.set_page_config(
     page_title="Gemini Drive Assistant",
@@ -22,49 +21,41 @@ st.markdown("""
 </script>
 """, unsafe_allow_html=True)
 
-# hide_streamlit_style = """
-#             <style>
-            
-#             </style>
-#             """
-# st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-
-# Custom CSS for dark theme
-
+# Hide Streamlit branding
 hide_streamlit_style = """
-                <style>
-                div[data-testid="stToolbar"] {
-                visibility: hidden;
-                height: 0%;
-                position: fixed;
-                }
-                div[data-testid="stDecoration"] {
-                visibility: hidden;
-                height: 0%;
-                position: fixed;
-                }
-                div[data-testid="stStatusWidget"] {
-                visibility: hidden;
-                height: 0%;
-                position: fixed;
-                }
-                #MainMenu {
-                visibility: hidden;
-                height: 0%;
-                }
-                header {
-                visibility: hidden;
-                height: 0%;
-                }
-                footer {
-                visibility: hidden;
-                height: 0%;
-                }
-                </style>
-                """
+<style>
+div[data-testid="stToolbar"] {
+visibility: hidden;
+height: 0%;
+position: fixed;
+}
+div[data-testid="stDecoration"] {
+visibility: hidden;
+height: 0%;
+position: fixed;
+}
+div[data-testid="stStatusWidget"] {
+visibility: hidden;
+height: 0%;
+position: fixed;
+}
+#MainMenu {
+visibility: hidden;
+height: 0%;
+}
+header {
+visibility: hidden;
+height: 0%;
+}
+footer {
+visibility: hidden;
+height: 0%;
+}
+</style>
+"""
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-
+# Custom CSS for dark theme
 st.markdown("""
 <style>
     /* FORCE DARK MODE ON EVERYTHING */
@@ -134,6 +125,13 @@ st.markdown("""
     
     .stMarkdown {
         color: #ffffff !important;
+    }
+    
+    /* Text area */
+    .stTextArea textarea {
+        background-color: #2d2d2d !important;
+        color: #ffffff !important;
+        border: 1px solid #444 !important;
     }
     
     /* Sidebar - force dark */
@@ -260,6 +258,8 @@ if 'selected_documents' not in st.session_state:
     st.session_state.selected_documents = set()
 if 'document_contents' not in st.session_state:
     st.session_state.document_contents = {}
+if 'system_prompt' not in st.session_state:
+    st.session_state.system_prompt = ""
 
 def initialize_connectors():
     """Initialize Drive and Gemini connectors"""
@@ -287,14 +287,12 @@ def load_documents():
                 # Add folder info to each file
                 for file in files:
                     file['folder_id'] = folder_id
-                all_files.append(files)
+                all_files.extend(files)
             
-            # Flatten the list
-            st.session_state.document_list = [f for sublist in all_files for f in sublist]
-            st.session_state.document_list = files
+            st.session_state.document_list = all_files
             
             # Select all documents by default
-            st.session_state.selected_documents = {file['id'] for file in files}
+            st.session_state.selected_documents = {file['id'] for file in all_files}
             
             st.session_state.documents_loaded = True
         
@@ -478,6 +476,57 @@ with col1:
     elif not st.session_state.documents_content:
         st.info("👈 **Step 4:** Click 'Load Selected Documents' to start chatting")
     else:
+        # SYSTEM PROMPT SECTION
+        st.markdown("---")
+        st.subheader("🎭 Custom AI Persona (Optional)")
+        
+        # System prompt input
+        system_prompt = st.text_area(
+            "Define AI Role/Persona",
+            value=st.session_state.system_prompt,
+            placeholder="Example: Act as a strategic thinker, writer, and creative director with expertise in brand development...",
+            height=100,
+            help="This sets how the AI should behave and approach your questions"
+        )
+        
+        # Update session state when changed
+        if system_prompt != st.session_state.system_prompt:
+            st.session_state.system_prompt = system_prompt
+        
+        # Show active persona status
+        if st.session_state.system_prompt:
+            st.success(f"✅ Active Persona Set ({len(st.session_state.system_prompt)} characters)")
+        else:
+            st.info("💡 No custom persona set. Using default assistant mode.")
+        
+        # Quick persona templates
+        with st.expander("📋 Quick Persona Templates"):
+            col_t1, col_t2 = st.columns(2)
+            
+            with col_t1:
+                if st.button("🎨 Creative Director", use_container_width=True, key="persona_creative"):
+                    st.session_state.system_prompt = "Act as an award-winning creative director with 15+ years of experience. Transform information into compelling creative concepts. Think visually, narratively, and strategically."
+                    st.rerun()
+                
+                if st.button("📊 Strategic Analyst", use_container_width=True, key="persona_analyst"):
+                    st.session_state.system_prompt = "Act as a senior strategic analyst. Synthesize information, identify patterns, draw data-driven conclusions, and provide actionable insights."
+                    st.rerun()
+            
+            with col_t2:
+                if st.button("✍️ Executive Writer", use_container_width=True, key="persona_writer"):
+                    st.session_state.system_prompt = "Act as an executive copywriter who writes for Fortune 500 companies. Create persuasive, polished content for C-suite audiences."
+                    st.rerun()
+                
+                if st.button("💡 Innovation Expert", use_container_width=True, key="persona_innovation"):
+                    st.session_state.system_prompt = "Act as an innovation consultant who helps companies reimagine possibilities. Propose breakthrough ideas and novel approaches."
+                    st.rerun()
+            
+            if st.button("🔄 Clear Persona", use_container_width=True, key="persona_clear"):
+                st.session_state.system_prompt = ""
+                st.rerun()
+        
+        st.markdown("---")
+        
         # Display selected documents info
         st.info(f"💡 Currently querying **{len(st.session_state.selected_documents)}** selected documents")
         
@@ -501,7 +550,8 @@ with col1:
                     try:
                         response = st.session_state.gemini_engine.query(
                             st.session_state.documents_content,
-                            prompt
+                            prompt,
+                            system_prompt=st.session_state.system_prompt
                         )
                         st.markdown(response)
                         
@@ -541,7 +591,8 @@ with col2:
                 try:
                     response = st.session_state.gemini_engine.query(
                         st.session_state.documents_content,
-                        question
+                        question,
+                        system_prompt=st.session_state.system_prompt
                     )
                     st.session_state.messages.append({
                         "role": "assistant",
@@ -573,12 +624,14 @@ with col2:
         2. Click **"Fetch Documents"**
         3. **Select/deselect** documents
         4. Click **"Load Selected Documents"**
-        5. Start asking questions!
+        5. **(Optional)** Set custom AI persona
+        6. Start asking questions!
         
         **Tips:**
         - Only selected documents are queried
-        - Change selection anytime
-        - Chat history clears when you reload
+        - Custom persona applies to all queries
+        - Change selection or persona anytime
+        - Chat history clears when you reload documents
         """)
 
 # Footer
