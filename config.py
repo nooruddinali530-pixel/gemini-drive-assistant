@@ -1,34 +1,27 @@
 import os
 import json
 
-# Detect if we're running on Streamlit Cloud
 IS_STREAMLIT_CLOUD = os.path.exists('/mount/src')
 
 if IS_STREAMLIT_CLOUD:
-    # Running on Streamlit Cloud - use secrets
-    print("🌐 Running on Streamlit Cloud")
+    print("Running on Streamlit Cloud")
     import streamlit as st
     
     GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
     DRIVE_FOLDER_IDS = st.secrets.get("DRIVE_FOLDER_IDS", "")
     
-    # Service account from secrets
     GOOGLE_APPLICATION_CREDENTIALS = "service-account.json"
     
-    # Get service account data from secrets
     sa_data = dict(st.secrets["gcp_service_account"])
     
-    # The private_key might have escaped \n that need to be actual newlines
     if "private_key" in sa_data:
-        # Replace escaped newlines with actual newlines
         sa_data["private_key"] = sa_data["private_key"].replace("\\n", "\n")
     
-    # Write service account JSON to file
     with open(GOOGLE_APPLICATION_CREDENTIALS, 'w') as f:
         json.dump(sa_data, f, indent=2)
     
-    print("✅ Loaded secrets from Streamlit Cloud")
-    print(f"✅ Service account written to {GOOGLE_APPLICATION_CREDENTIALS}")
+    print("Loaded secrets from Streamlit Cloud")
+    print(f"Service account written to {GOOGLE_APPLICATION_CREDENTIALS}")
     
 else:
     # Running locally - use .env
@@ -43,15 +36,13 @@ else:
     if not GEMINI_API_KEY:
         raise ValueError("GEMINI_API_KEY not found in .env file")
     
-    print("✅ Loaded configuration from .env")
+    print("Loaded configuration from .env")
 
-# Convert to list
 if DRIVE_FOLDER_IDS:
     DRIVE_FOLDER_IDS_LIST = [fid.strip() for fid in DRIVE_FOLDER_IDS.split(',') if fid.strip()]
 else:
     DRIVE_FOLDER_IDS_LIST = []
 
-# Gemini Model Configuration
 GEMINI_MODEL = "gemini-flash-latest"
 
 print(f"📁 {len(DRIVE_FOLDER_IDS_LIST)} folder(s) configured")

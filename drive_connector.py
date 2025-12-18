@@ -15,10 +15,9 @@ class DriveConnector:
             scopes=['https://www.googleapis.com/auth/drive.readonly']
         )
         self.service = build('drive', 'v3', credentials=self.credentials)
-        print("✅ Connected to Google Drive")
+        print("Connected to Google Drive")
     
     def list_files(self, folder_id):
-        """List all files in a folder"""
         try:
             query = f"'{folder_id}' in parents and trashed=false"
             results = self.service.files().list(
@@ -30,7 +29,7 @@ class DriveConnector:
             print(f"📁 Found {len(files)} files in folder")
             return files
         except Exception as e:
-            print(f"❌ Error listing files: {e}")
+            print(f"Error listing files: {e}")
             return []
     
     def download_file(self, file_id):
@@ -46,7 +45,7 @@ class DriveConnector:
             file_content.seek(0)
             return file_content
         except Exception as e:
-            print(f"❌ Error downloading file: {e}")
+            print(f"Error downloading file: {e}")
             return None
     
     def extract_text_from_pdf(self, file_content):
@@ -57,21 +56,19 @@ class DriveConnector:
                 text += page.extract_text() + "\n"
             return text
         except Exception as e:
-            print(f"❌ Error extracting PDF text: {e}")
+            print(f"Error extracting PDF text: {e}")
             return ""
     
     def extract_text_from_docx(self, file_content):
-        """Extract text from DOCX file"""
         try:
             doc = Document(file_content)
             text = "\n".join([para.text for para in doc.paragraphs])
             return text
         except Exception as e:
-            print(f"❌ Error extracting DOCX text: {e}")
+            print(f"Error extracting DOCX text: {e}")
             return ""
     
     def extract_text_from_txt(self, file_content):
-        """Extract text from TXT file"""
         try:
             return file_content.read().decode('utf-8')
         except Exception as e:
@@ -79,7 +76,6 @@ class DriveConnector:
             return ""
     
     def get_file_content(self, file_id, mime_type):
-        """Get text content from file based on type"""
         file_content = self.download_file(file_id)
         if not file_content:
             return ""
@@ -105,10 +101,10 @@ class DriveConnector:
                 file_content.seek(0)
                 return file_content.read().decode('utf-8')
             except Exception as e:
-                print(f"❌ Error exporting Google Doc: {e}")
+                print(f"Error exporting Google Doc: {e}")
                 return ""
         else:
-            print(f"⚠️ Unsupported file type: {mime_type}")
+            print(f"Unsupported file type: {mime_type}")
             return ""
     
     def get_all_documents_content(self, folder_id):
@@ -117,7 +113,7 @@ class DriveConnector:
         
         combined_content = []
         for file in files:
-            print(f"📄 Processing: {file['name']}")
+            print(f"Processing: {file['name']}")
             content = self.get_file_content(file['id'], file['mimeType'])
             if content:
                 combined_content.append(f"=== {file['name']} ===\n{content}\n")

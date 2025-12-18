@@ -3,7 +3,6 @@ import config
 from drive_connector import DriveConnector
 from gemini_query import GeminiQueryEngine
 
-# Page configuration - FORCE DARK MODE
 st.set_page_config(
     page_title="Gemini Drive Assistant",
     page_icon="🤖",
@@ -11,7 +10,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Force dark theme
 st.markdown("""
 <script>
     var stTheme = window.parent.document.querySelector('[data-testid="stAppViewContainer"]');
@@ -21,7 +19,6 @@ st.markdown("""
 </script>
 """, unsafe_allow_html=True)
 
-# Hide Streamlit branding
 hide_streamlit_style = """
 <style>
 div[data-testid="stToolbar"] {
@@ -55,7 +52,6 @@ height: 0%;
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-# Custom CSS for dark theme
 st.markdown("""
 <style>
     /* FORCE DARK MODE ON EVERYTHING */
@@ -241,7 +237,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state
 if 'messages' not in st.session_state:
     st.session_state.messages = []
 if 'drive_connector' not in st.session_state:
@@ -262,7 +257,6 @@ if 'system_prompt' not in st.session_state:
     st.session_state.system_prompt = ""
 
 def initialize_connectors():
-    """Initialize Drive and Gemini connectors"""
     try:
         with st.spinner("🔌 Connecting to Google Drive..."):
             st.session_state.drive_connector = DriveConnector()
@@ -276,22 +270,18 @@ def initialize_connectors():
         return False
 
 def load_documents():
-    """Load documents from Drive folder"""
     try:
         with st.spinner("📂 Fetching document list from Drive..."):
-            # Get file list from all configured folders
             all_files = []
             
             for folder_id in config.DRIVE_FOLDER_IDS_LIST:
                 files = st.session_state.drive_connector.list_files(folder_id)
-                # Add folder info to each file
                 for file in files:
                     file['folder_id'] = folder_id
                 all_files.extend(files)
             
             st.session_state.document_list = all_files
             
-            # Select all documents by default
             st.session_state.selected_documents = {file['id'] for file in all_files}
             
             st.session_state.documents_loaded = True
@@ -302,7 +292,6 @@ def load_documents():
         return False
 
 def load_selected_documents():
-    """Load content only from selected documents"""
     if not st.session_state.selected_documents:
         st.warning("⚠️ No documents selected!")
         st.session_state.documents_content = ""
@@ -314,7 +303,6 @@ def load_selected_documents():
             
             for file in st.session_state.document_list:
                 if file['id'] in st.session_state.selected_documents:
-                    # Check if already cached
                     if file['id'] not in st.session_state.document_contents:
                         content = st.session_state.drive_connector.get_file_content(
                             file['id'], 
@@ -335,7 +323,6 @@ def load_selected_documents():
         return False
 
 def get_file_icon(mime_type):
-    """Get emoji icon for file type"""
     if mime_type == 'application/pdf':
         return "📕"
     elif 'document' in mime_type:
@@ -357,12 +344,10 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar
 with st.sidebar:
     st.image("https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg", width=100)
     st.title("⚙️ Configuration")
     
-    # Connection status
     st.subheader("📡 Connection Status")
     
     if st.session_state.drive_connector is None:
@@ -377,13 +362,11 @@ with st.sidebar:
     
     st.divider()
     
-    # Initialize button
     if st.button("🚀 Initialize Connection", use_container_width=True):
         if initialize_connectors():
             st.success("✅ Successfully connected!")
             st.rerun()
     
-    # Load documents button
     if st.session_state.drive_connector is not None:
         if st.button("📁 Fetch Documents", use_container_width=True):
             if load_documents():
@@ -392,11 +375,9 @@ with st.sidebar:
     
     st.divider()
     
-    # Document selection
     if st.session_state.documents_loaded:
         st.subheader("📚 Select Documents")
         
-        # Select/Deselect all buttons
         col1, col2 = st.columns(2)
         with col1:
             if st.button("✅ Select All", use_container_width=True):
@@ -409,25 +390,21 @@ with st.sidebar:
         
         st.write(f"**{len(st.session_state.selected_documents)}/{len(st.session_state.document_list)}** selected")
         
-        # Document checkboxes
         st.markdown("---")
         
         for file in st.session_state.document_list:
             file_icon = get_file_icon(file['mimeType'])
             
-            # Checkbox for each document
             is_selected = file['id'] in st.session_state.selected_documents
             
             checkbox_label = f"{file_icon} {file['name']}"
             
-            # Create checkbox
             selected = st.checkbox(
                 checkbox_label,
                 value=is_selected,
                 key=f"doc_{file['id']}"
             )
             
-            # Update selection
             if selected and file['id'] not in st.session_state.selected_documents:
                 st.session_state.selected_documents.add(file['id'])
             elif not selected and file['id'] in st.session_state.selected_documents:
@@ -435,15 +412,12 @@ with st.sidebar:
         
         st.divider()
         
-        # Load selected documents button
         if st.button("🔄 Load Selected Documents", use_container_width=True, type="primary"):
             if load_selected_documents():
                 st.success(f"✅ Loaded {len(st.session_state.selected_documents)} documents!")
-                # Clear chat when documents change
                 st.session_state.messages = []
                 st.rerun()
         
-        # Stats
         if st.session_state.documents_content:
             st.divider()
             total_chars = len(st.session_state.documents_content)
@@ -452,22 +426,18 @@ with st.sidebar:
     
     st.divider()
     
-    # Settings
     st.subheader("🔧 Settings")
     st.text(f"Model: {config.GEMINI_MODEL}")
     
-    # Clear chat button
     if st.button("🗑️ Clear Chat History", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
 
-# Main content area
 col1, col2 = st.columns([2, 1])
 
 with col1:
     st.subheader("💬 Chat with Your Documents")
     
-    # Check if ready to chat
     if not st.session_state.documents_loaded:
         st.info("👈 **Step 1:** Click 'Initialize Connection' in sidebar")
         st.info("👈 **Step 2:** Click 'Fetch Documents' to see available files")
@@ -476,11 +446,9 @@ with col1:
     elif not st.session_state.documents_content:
         st.info("👈 **Step 4:** Click 'Load Selected Documents' to start chatting")
     else:
-        # SYSTEM PROMPT SECTION
         st.markdown("---")
         st.subheader("🎭 Custom AI Persona (Optional)")
         
-        # System prompt input
         system_prompt = st.text_area(
             "Define AI Role/Persona",
             value=st.session_state.system_prompt,
@@ -489,17 +457,14 @@ with col1:
             help="This sets how the AI should behave and approach your questions"
         )
         
-        # Update session state when changed
         if system_prompt != st.session_state.system_prompt:
             st.session_state.system_prompt = system_prompt
         
-        # Show active persona status
         if st.session_state.system_prompt:
             st.success(f"✅ Active Persona Set ({len(st.session_state.system_prompt)} characters)")
         else:
             st.info("💡 No custom persona set. Using default assistant mode.")
         
-        # Quick persona templates
         with st.expander("📋 Quick Persona Templates"):
             col_t1, col_t2 = st.columns(2)
             
@@ -527,24 +492,18 @@ with col1:
         
         st.markdown("---")
         
-        # Display selected documents info
         st.info(f"💡 Currently querying **{len(st.session_state.selected_documents)}** selected documents")
         
-        # Display chat messages
         for message in st.session_state.messages:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
         
-        # Chat input
         if prompt := st.chat_input("Ask a question about your selected documents..."):
-            # Add user message
             st.session_state.messages.append({"role": "user", "content": prompt})
             
-            # Display user message
             with st.chat_message("user"):
                 st.markdown(prompt)
             
-            # Generate response
             with st.chat_message("assistant"):
                 with st.spinner("🤔 Thinking..."):
                     try:
@@ -555,7 +514,6 @@ with col1:
                         )
                         st.markdown(response)
                         
-                        # Add assistant message
                         st.session_state.messages.append({
                             "role": "assistant",
                             "content": response
@@ -571,7 +529,6 @@ with col1:
 with col2:
     st.subheader("💡 Quick Actions")
     
-    # Example questions
     st.markdown("**Try asking:**")
     example_questions = [
         "What are the main topics?",
@@ -584,10 +541,8 @@ with col2:
     for question in example_questions:
         if st.button(question, key=question, use_container_width=True):
             if st.session_state.documents_content:
-                # Add to chat
                 st.session_state.messages.append({"role": "user", "content": question})
                 
-                # Generate response
                 try:
                     response = st.session_state.gemini_engine.query(
                         st.session_state.documents_content,
@@ -606,7 +561,6 @@ with col2:
     
     st.divider()
     
-    # Currently selected documents display
     if st.session_state.documents_loaded and st.session_state.selected_documents:
         st.markdown("**📑 Active Documents:**")
         for file in st.session_state.document_list:
@@ -616,7 +570,6 @@ with col2:
     
     st.divider()
     
-    # Help section
     with st.expander("ℹ️ How to Use"):
         st.markdown("""
         **Steps:**
@@ -634,7 +587,6 @@ with col2:
         - Chat history clears when you reload documents
         """)
 
-# Footer
 st.divider()
 st.markdown("""
 <div style='text-align: center; color: #666; padding: 1rem;'>
